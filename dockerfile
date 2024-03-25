@@ -30,4 +30,4 @@ COPY --from=builder /app/dist /app/public
 ## expose port for express
 EXPOSE 3000
 
-CMD ["node",  "server.js"]
+CMD ["node",  "dist/server.js"]

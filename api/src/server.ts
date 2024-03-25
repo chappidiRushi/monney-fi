@@ -1,28 +1,29 @@
 require("dotenv").config();
-let express = require("express");
-let app = express();
-const environment = require("./config/environment");
-let cors = require("cors");
-let path = require("path");
+import cors from "cors";
+import express from "express";
+import path from "path";
 let bodyParser = require("body-parser");
-const { expressjwt: expressjwt } = require("express-jwt");
 // Import Mongoose
-let mongoose = require("mongoose");
+import mongoose from "mongoose";
+
 
 //const config = require("./config.json");
 
+let app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Connect to Mongoose and set connection variable
 // MongoDB connection
-console.log("connection string", environment.mongodb.uri);
-console.log("secret", environment.secret);
-mongoose.connect(environment.mongodb.uri, {
-  useUnifiedTopology: true,
-  useNewUrlParser: true
-});
+// console.log("connection string", environment.mongodb.uri);
+// console.log("secret", environment.secret);
+mongoose.connect("mongodb://localhost:27017/example",
+  // {
+  // useUnifiedTopology: true,
+  // useNewUrlParser: true
+  // }
+);
 mongoose.Promise = global.Promise;
 
 // On connection error
@@ -52,9 +53,12 @@ const allowedExt = [
 ];
 
 // Import routes
-let apiRoutes = require("./api-routes");
 // Use Api routes in the App
-app.use("/api", apiRoutes);
+// app.use("/api", apiRoutes);
+app.get('/status', (_req, res) => {
+  res.status(200).json({ message: 'Server is up and running.' });
+});
+
 
 app.get("*", (req, res) => {
   if (allowedExt.filter((ext) => req.url.indexOf(ext) > 0).length > 0) {
@@ -63,33 +67,32 @@ app.get("*", (req, res) => {
     res.sendFile(path.resolve("public/index.html"));
   }
 });
-
 // use JWT auth to secure the api, the token can be passed in the authorization header or querystring
-app.use(
-  expressjwt({
-    secret: environment.secret,
-    algorithms: ["HS256"],
-    getToken: function (req) {
-      if (
-        req.headers.authorization &&
-        req.headers.authorization.split(" ")[0] === "Bearer"
-      ) {
-        return req.headers.authorization.split(" ")[1];
-      } else if (req.query && req.query.token) {
-        return req.query.token;
-      }
-      return null;
-    }
-  }).unless({
-    path: [
-      "/api/user/authenticate",
-      "/api/users",
-      "/index.html",
-      "/*.js",
-      "/*.css"
-    ]
-  })
-);
+// app.use(
+//   // expressjwt({
+//   //   secret: sec,
+//   //   algorithms: ["HS256"],
+//   //   // getToken: function (req) {
+//   //   //   if (
+//   //   //     req.headers.authorization &&
+//   //   //     req.headers.authorization.split(" ")[0] === "Bearer"
+//   //   //   ) {
+//   //   //     return req.headers.authorization.split(" ")[1];
+//   //   //   } else if (req.query && req.query.token) {
+//   //   //     return req.query.token;
+//   //   //   }
+//   //   //   return undefined
+//   //   // }
+//   // }).unless({
+//   //   path: [
+//   //     "/api/user/authenticate",
+//   //     "/api/users",
+//   //     "/index.html",
+//   //     "/*.js",
+//   //     "/*.css"
+//   //   ]
+//   // })
+// );
 
 
 
